@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load env variables from a .env file if it exists
-load_dotenv()
-
 # Base directories
 BASE_DIR = Path(__file__).resolve().parent
+
+# Load env variables from backend/.env or root/.env
+load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR.parent / ".env")
 LOCAL_DB_DIR = BASE_DIR / "local_db"
 LOCAL_DB_PATH = LOCAL_DB_DIR / "db.json"
 CHROMA_DB_PATH = str(BASE_DIR / "db" / "chroma")
@@ -26,7 +27,12 @@ PORT = int(os.getenv("PORT", 8000))
 DATABASE_MODE = os.getenv("DATABASE_MODE", "auto").lower()
 
 if DATABASE_MODE == "auto":
-    if os.path.exists(FIREBASE_CREDENTIALS_PATH) or os.getenv("FIREBASE_CREDENTIALS_JSON"):
+    has_credentials = (
+        os.path.exists(FIREBASE_CREDENTIALS_PATH)
+        or os.getenv("FIREBASE_CREDENTIALS_JSON")
+        or (os.getenv("FIREBASE_PRIVATE_KEY") and os.getenv("FIREBASE_CLIENT_EMAIL"))
+    )
+    if has_credentials:
         DATABASE_MODE = "firebase"
     else:
         DATABASE_MODE = "local"

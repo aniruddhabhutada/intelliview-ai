@@ -1,4 +1,14 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const getApiUrl = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  // Strip trailing slash
+  url = url.replace(/\/$/, '');
+  // Append /api if not present
+  if (!url.endsWith('/api')) {
+    url = url + '/api';
+  }
+  return url;
+};
+const BASE_URL = getApiUrl();
 
 async function handleResponse(response) {
   if (!response.ok) {

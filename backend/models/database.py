@@ -119,7 +119,23 @@ class FirebaseFirestoreDatabase:
         
         # Initialize Firebase App if not already initialized
         if not firebase_admin._apps:
-            if os.getenv("FIREBASE_CREDENTIALS_JSON"):
+            # First, check individual env variables
+            firebase_project_id = os.getenv("NEXT_PUBLIC_FIREBASE_PROJECT_ID") or os.getenv("FIREBASE_PROJECT_ID")
+            firebase_private_key = os.getenv("FIREBASE_PRIVATE_KEY")
+            firebase_client_email = os.getenv("FIREBASE_CLIENT_EMAIL")
+            
+            if firebase_project_id and firebase_private_key and firebase_client_email:
+                # Format private key newlines safely
+                pk = firebase_private_key.replace("\\n", "\n")
+                cred_dict = {
+                    "type": "service_account",
+                    "project_id": firebase_project_id,
+                    "private_key": pk,
+                    "client_email": firebase_client_email,
+                    "token_uri": "https://oauth2.googleapis.com/token"
+                }
+                cred = credentials.Certificate(cred_dict)
+            elif os.getenv("FIREBASE_CREDENTIALS_JSON"):
                 cred_dict = json.loads(os.getenv("FIREBASE_CREDENTIALS_JSON"))
                 cred = credentials.Certificate(cred_dict)
             elif os.path.exists(config.FIREBASE_CREDENTIALS_PATH):
