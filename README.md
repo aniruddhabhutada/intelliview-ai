@@ -145,7 +145,7 @@ Follow these instructions to start the development servers:
    ```bash
    npm run dev
    ```
-4. Access the platform at **[http://localhost:3000](http://localhost:3000)** (or the outputted local port).
+4. Access the platform at **[https://intelliview-ai-seven.vercel.app/](https://intelliview-ai-seven.vercel.app/)** (or the outputted local port).
 
 ---
 
