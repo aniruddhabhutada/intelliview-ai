@@ -1,0 +1,41 @@
+# Frontend dependency and build directories
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+
+# Backend dependency and build directories
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+backend/routes/__pycache__/
+backend/models/__pycache__/
+backend/services/__pycache__/
+backend/agents/__pycache__/
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/local_db/db.json
+*.pyc
+*.pyo
+*.pyd
+
+# Security and Credentials
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+*.pem
+*.key
+*.json
+!backend/requirements.txt
+!frontend/package.json
+!frontend/package-lock.json
+
+# Operating System and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.log
