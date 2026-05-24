@@ -9,6 +9,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     id: str  # UID from Firebase or client-generated uuid
 
+class UserLoginRequest(BaseModel):
+    id: str
+
 class UserResponse(UserBase):
     id: str
     resume_url: Optional[str] = None

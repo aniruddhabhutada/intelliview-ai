@@ -22,6 +22,25 @@ export const apiService = {
         body: JSON.stringify({ id, name, email })
       }).then(handleResponse);
     },
+    async login(id) {
+      return fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      }).then(handleResponse);
+    },
+    async google(id, name, email) {
+      return fetch(`${BASE_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, email })
+      }).then(handleResponse);
+    },
+    async logout() {
+      return fetch(`${BASE_URL}/auth/logout`, {
+        method: 'POST'
+      }).then(handleResponse);
+    },
     async getProfile(userId) {
       return fetch(`${BASE_URL}/auth/profile/${userId}`).then(handleResponse);
     }

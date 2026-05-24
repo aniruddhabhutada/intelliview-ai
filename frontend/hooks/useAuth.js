@@ -82,35 +82,76 @@ export function useAuth() {
       if (isConfigured && auth) {
         let creds;
         if (isSignUp) {
-          creds = await createUserWithEmailAndPassword(auth, email, password);
+          // Register Flow: Firebase create user -> Store user profile -> Redirect
+          try {
+            creds = await createUserWithEmailAndPassword(auth, email, password);
+          } catch (fbErr) {
+            if (fbErr.code === 'auth/email-already-in-use') {
+              throw new Error("An account already exists with this email address.");
+            } else if (fbErr.code === 'auth/weak-password') {
+              throw new Error("Password is too weak. Please use at least 6 characters.");
+            } else if (fbErr.code === 'auth/invalid-email') {
+              throw new Error("Please enter a valid email address.");
+            }
+            throw fbErr;
+          }
+          const firebaseUser = creds.user;
+          const profile = await apiService.auth.register(
+            firebaseUser.uid,
+            email.split('@')[0],
+            email
+          );
+          setUser(profile);
+          router.push('/dashboard');
+          return profile;
         } else {
-          creds = await signInWithEmailAndPassword(auth, email, password);
+          // Login Flow: Firebase authentication -> Fetch user profile -> Redirect
+          try {
+            creds = await signInWithEmailAndPassword(auth, email, password);
+          } catch (fbErr) {
+            if (fbErr.code === 'auth/invalid-credential' || fbErr.code === 'auth/wrong-password' || fbErr.code === 'auth/user-not-found') {
+              throw new Error("Invalid email address or password.");
+            } else if (fbErr.code === 'auth/invalid-email') {
+              throw new Error("Please enter a valid email address.");
+            }
+            throw fbErr;
+          }
+          const firebaseUser = creds.user;
+          const profile = await apiService.auth.login(firebaseUser.uid);
+          setUser(profile);
+          router.push('/dashboard');
+          return profile;
         }
-        const firebaseUser = creds.user;
-        const profile = await apiService.auth.register(
-          firebaseUser.uid,
-          email.split('@')[0],
-          email
-        );
+      } else {
+        // Local Mock Login/Register Bypass
+        const mockUid = `local_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        let profile;
+        if (isSignUp) {
+          profile = await apiService.auth.register(
+            mockUid,
+            email.split('@')[0],
+            email
+          );
+        } else {
+          try {
+            profile = await apiService.auth.login(mockUid);
+          } catch (e) {
+            // Auto register on local bypass login to keep experience smooth
+            profile = await apiService.auth.register(
+              mockUid,
+              email.split('@')[0],
+              email
+            );
+          }
+        }
         setUser(profile);
+        localStorage.setItem('intelliview_user', JSON.stringify(profile));
         router.push('/dashboard');
         return profile;
-      } else {
-        // Local Mock Login/Register
-        const mockUid = `local_${email.replace(/[^a-zA-Z0-9]/g, '_')}`;
-        const mockProfile = await apiService.auth.register(
-          mockUid,
-          email.split('@')[0],
-          email
-        );
-        setUser(mockProfile);
-        localStorage.setItem('intelliview_user', JSON.stringify(mockProfile));
-        router.push('/dashboard');
-        return mockProfile;
       }
     } catch (err) {
-      console.error("[useAuth] Login error:", err);
-      setError(err.message || 'Authentication failed. Please verify credentials.');
+      console.error("[useAuth] Authentication error:", err);
+      setError(err.message || 'Authentication failed. Please verify your details.');
       setLoading(false);
       throw err;
     }
@@ -121,9 +162,18 @@ export function useAuth() {
     setError(null);
     try {
       if (isConfigured && auth && googleProvider) {
-        const creds = await signInWithPopup(auth, googleProvider);
+        // Google login flow: Google provider -> Firebase auth -> Create profile if missing -> Redirect
+        let creds;
+        try {
+          creds = await signInWithPopup(auth, googleProvider);
+        } catch (fbErr) {
+          if (fbErr.code === 'auth/popup-closed-by-user') {
+            throw new Error("Google sign-in popup was closed before completion.");
+          }
+          throw fbErr;
+        }
         const firebaseUser = creds.user;
-        const profile = await apiService.auth.register(
+        const profile = await apiService.auth.google(
           firebaseUser.uid,
           firebaseUser.displayName || 'Candidate',
           firebaseUser.email
@@ -134,7 +184,7 @@ export function useAuth() {
       } else {
         // Local Mock Google Login
         const mockUid = "mock_google_candidate_100";
-        const mockProfile = await apiService.auth.register(
+        const mockProfile = await apiService.auth.google(
           mockUid,
           "Alex Candidate",
           "alex.candidate@gmail.com"
@@ -158,6 +208,9 @@ export function useAuth() {
       if (isConfigured && auth) {
         await signOut(auth);
       }
+      try {
+        await apiService.auth.logout();
+      } catch (e) {}
       localStorage.removeItem('intelliview_user');
       setUser(null);
       router.push('/');
