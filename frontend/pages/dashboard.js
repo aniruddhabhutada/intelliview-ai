@@ -250,19 +250,23 @@ export default function Dashboard() {
                   /* Filled Resume Stats */
                   <div className="flex flex-col gap-6">
                     {/* Skills DETECTED */}
-                    <div>
-                      <span className="text-[10px] font-black text-dark-muted uppercase tracking-widest block mb-2">Detected Skills ({analysis.skills.length})</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {analysis.skills.map((skill, index) => (
-                          <span 
-                            key={index} 
-                            className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary-light uppercase tracking-wide hover:bg-primary/20 hover:border-primary/40 transition-all duration-200 cursor-default"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                    {user?.skills?.length > 0 && (
+                      <div>
+                        <span className="text-[10px] font-black text-dark-muted uppercase tracking-widest block mb-2">
+                          Detected Skills ({user.skills.length})
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {user.skills.map((skill, index) => (
+                            <span 
+                              key={index} 
+                              className="px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary-light uppercase tracking-wide hover:bg-primary/20 hover:border-primary/40 transition-all duration-200 cursor-default"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Strong vs Weak lists */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -272,7 +276,7 @@ export default function Dashboard() {
                           <span>Core Strengths</span>
                         </div>
                         <ul className="flex flex-col gap-2">
-                          {analysis.strengths.slice(0, 3).map((st, i) => (
+                          {(analysis?.strengths || []).slice(0, 3).map((st, i) => (
                             <li key={i} className="text-xs text-dark-muted leading-relaxed flex items-start gap-2">
                               <span className="text-green-400 font-extrabold flex-shrink-0 mt-0.5">•</span>
                               <span>{st}</span>
@@ -287,7 +291,7 @@ export default function Dashboard() {
                           <span>Identified Gaps</span>
                         </div>
                         <ul className="flex flex-col gap-2">
-                          {analysis.weakness.slice(0, 3).map((wk, i) => (
+                          {(analysis?.weakness || []).slice(0, 3).map((wk, i) => (
                             <li key={i} className="text-xs text-dark-muted leading-relaxed flex items-start gap-2">
                               <span className="text-red-400 font-extrabold flex-shrink-0 mt-0.5">•</span>
                               <span>{wk}</span>
